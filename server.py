@@ -6,11 +6,15 @@ import threading
 server = FastAPI()
 
 @server.get("/context")
-def get_context(_: Request) -> Response:
+# Omit "async" and it's run in an external threadpool
+# https://fastapi.tiangolo.com/async/#path-operation-functions
+async def get_context(_: Request) -> Response:
     thread_id = threading.get_native_id()
     print(f"thread_id: {thread_id}")
 
     c = ctx.get_context()
+
+    # If the key exists in the context, it means the context is reused.
     if c.has_key("test"):
         return Response(status_code=500, content="Key exists")
     else:
@@ -24,4 +28,3 @@ if __name__ == '__main__':
         log_level='info',
         host='127.0.0.1',
     )
-
